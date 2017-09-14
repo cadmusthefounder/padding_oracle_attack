@@ -67,7 +67,7 @@ def valid_pkcs7_padding(msg, block_size):
 	""" Verifies that a message is padded according to PKCS#7.
 
 	Args:
-		msg (str): The message to be verified
+		msg (str): The message to be verified.
 		block_size (int): The block size.
 
 	Returns:
