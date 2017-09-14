@@ -47,8 +47,20 @@ def execute_padding_oracle_attack(oracle, ciphertext, iv):
 
 def crack_blocks(oracle, previous_block, current_block, block_size=16):
     last_byte = get_last_byte(oracle, previous_block, current_block)
-    print "Last Byte: {}".format(last_byte)
-    return []
+
+    decoded_ciphertext = [0] * (block_size - 1) + [last_byte]
+
+    for i in range(block_size-2, -1, -1):
+        pad_val = block_size - i
+        prefix = previous_block[:i]
+        suffix = [val ^ decoded_ciphertext[i+pos+1] ^ pad_val for (pos, val) in enumerate(previous_block[i+1:])]
+        for guess in range(256):
+            evil_previous_block = prefix + [previous_block[i] ^ guess ^ pad_val] + suffix
+            if not oracle.aes_valid_padding(stringify(current_block), stringify(evil_previous_block)):
+                continue
+            decoded_ciphertext[i] = guess
+            break
+    return decoded_ciphertext
 
 def get_last_byte(oracle, previous_block, current_block, block_size=16):
     prefix = previous_block[:-1]
@@ -59,7 +71,6 @@ def get_last_byte(oracle, previous_block, current_block, block_size=16):
 
         # Guess might be correct but need to check edge case.
         evil_previous_block[-2] = evil_previous_block[-2] ^ 1
-        print "Evil previous block: {}".format(evil_previous_block)
         if not oracle.aes_valid_padding(stringify(current_block), stringify(evil_previous_block)):
             continue
         return guess
