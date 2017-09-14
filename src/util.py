@@ -1,17 +1,12 @@
 from Crypto.Cipher import AES
 
-def xor_strings(s,t):
-    return "".join(chr(ord(a)^ord(b)) for a,b in zip(s,t))
-
 def encrypt(plaintext, iv, key):
-	temp_value = xor_strings(plaintext, iv)
-	cipher = AES.new(key, AES.MODE_ECB)
-	return cipher.encrypt(temp_value)
+	cipher = AES.new(key, AES.MODE_CBC, iv)
+	return cipher.encrypt(plaintext)
 
 def decrypt(ciphertext, iv, key):
-	cipher = AES.new(key, AES.MODE_ECB)
-	temp_value = cipher.decrypt(ciphertext)
-	return xor_strings(temp_value, iv)
+	cipher = AES.new(key, AES.MODE_CBC, iv)
+	return cipher.decrypt(ciphertext)
 
 def pkcs7_pad(text, block_size=16):
 	length = block_size - (len(text) % block_size)
